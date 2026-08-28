@@ -1,0 +1,135 @@
+# Avventua
+
+Un gioco di ruolo D&D-like in cui il Dungeon Master è un'AI. Il giocatore non
+sceglie fra opzioni preconfezionate: scrive liberamente cosa fa, e il DM narra
+le conseguenze restando coerente con le regole e con tutto ciò che è già
+successo.
+
+```
+app/       Applicazione Flutter (Android, poi iOS)
+backend/   Cloudflare Worker + D1: dati, regole, motore DM-AI
+docs/      Decisioni di progetto e punti aperti
+```
+
+## Come funziona un turno
+
+```
+giocatore scrive un'azione
+        │
+        ▼
+POST /campaigns/:id/action ──► costruisce il prompt del DM
+                                 (ambientazione + riassunto campagna
+                                  + eventi recenti + stato del mondo
+                                  + scheda personaggio)
+        │
+        ▼
+   Gemini risponde in JSON strutturato
+   { narrazione, richiesta_tiro, xp, danni, nuove entità, stato del mondo }
+        │
+        ▼
+   il backend VALIDA e APPLICA: XP con cap, PF nei limiti, percorsi dello
+   stato del mondo controllati, entità nuove salvate nell'ambientazione
+        │
+        ▼
+   se serve un tiro ──► POST /campaigns/:id/roll
+                        il numero nasce qui, mai nel modello
+                        poi il DM narra l'esito
+```
+
+L'invariante è una sola: **l'AI propone, il backend dispone.** Nessun numero
+che conta ai fini delle regole viene generato dal modello — né i dadi, né gli
+XP effettivi, né i punti ferita risultanti, né il bonus di caratteristica. Il
+motivo immediato è la coerenza con il regolamento; quello a lungo termine è il
+multiplayer, dove tutti i partecipanti devono vedere lo stesso risultato.
+
+## Backend
+
+Cloudflare Workers + D1 (SQLite serverless), TypeScript, nessuna dipendenza a
+runtime.
+
+```bash
+cd backend
+npm install
+
+# Database
+npx wrangler d1 create avventua           # copiare database_id in wrangler.toml
+npm run db:migrate:local                  # oppure db:migrate:remote
+
+# Chiave Gemini
+cp .dev.vars.example .dev.vars            # e inserire la chiave
+npx wrangler secret put GEMINI_API_KEY    # per il deploy
+
+npm run dev        # http://localhost:8787
+npm test           # 59 test
+npm run typecheck
+npm run deploy
+```
+
+Per giocare senza chiave API (o nei test) basta `AI_PROVIDER=mock`: risponde un
+provider deterministico che rispetta lo stesso contratto.
+
+### API
+
+| Metodo | Rotta | Cosa fa |
+| --- | --- | --- |
+| `GET` | `/settings` | Ambientazioni disponibili |
+| `GET` | `/settings/:id/{bestiary,npcs,items}` | Contenuti dell'ambientazione |
+| `GET` `POST` | `/characters` | Elenca / crea personaggi |
+| `POST` | `/characters/roll-stats` | Tira 4d6 scarta il peggiore |
+| `GET` | `/characters/:id` | Scheda + inventario |
+| `POST` `PATCH` `DELETE` | `/characters/:id/inventory[/:itemId]` | Inventario |
+| `GET` `POST` | `/campaigns` | Elenca / crea campagne |
+| `GET` | `/campaigns/:id` | Stato partita: campagna, PG, eventi, riassunto |
+| `POST` | `/campaigns/:id/start` | Incipit generato dal DM |
+| `POST` | `/campaigns/:id/action` | **Turno di gioco** |
+| `POST` | `/campaigns/:id/roll` | Esegue il tiro richiesto e ne fa narrare l'esito |
+| `POST` | `/campaigns/:id/end-session` | Chiude la sessione e aggiorna la memoria |
+| `GET` | `/campaigns/:id/summary` | Riassunto della campagna |
+| `POST` | `/campaigns/:id/novel` | Riscrive la cronaca come racconto |
+| `POST` | `/dice/roll` | Tiro libero, fuori dal loop narrativo |
+
+L'utente si identifica con l'header `x-utente-id`. In v1 non c'è
+autenticazione: l'app genera un id locale alla prima apertura. È l'unico punto
+da sostituire quando arriverà il login vero.
+
+## App
+
+```bash
+cd app
+flutter pub get
+flutter run --dart-define=AVVENTUA_API=http://10.0.2.2:8787   # emulatore Android
+```
+
+`10.0.2.2` è il localhost della macchina host visto dall'emulatore. Su
+dispositivo fisico va messo l'IP della macchina o l'URL del Worker deployato.
+
+Richiede Flutter 3.27 o successivo. Stato con Riverpod, parsing JSON scritto a
+mano (niente `build_runner` da mantenere).
+
+## Memoria narrativa
+
+Il problema è tenere una campagna coerente per decine di sessioni senza rileggere
+tutto a ogni turno.
+
+- **Fine sessione** → una chiamata AI riassume *solo* quella sessione e accoda
+  il paragrafo. Costo: una chiamata a sessione.
+- **Ogni N sessioni** (o oltre una soglia di lunghezza) → una chiamata rilegge
+  consolidato + delta accumulati e li riscrive in un testo unico, eliminando
+  ridondanze e contraddizioni. I delta inglobati vengono cancellati.
+- **Fine campagna** → lo stesso consolidato viene riscritto come racconto e
+  consegnato al giocatore.
+
+Le soglie sono in `wrangler.toml` (`CONSOLIDA_OGNI_N_SESSIONI`,
+`CONSOLIDA_SOGLIA_CARATTERI`).
+
+## Cambiare motore AI
+
+Tutto il backend parla solo con `ProviderAi.chiamaAI`. Per cambiare fornitore
+si aggiunge un file in `backend/src/ai/`, si aggiunge un caso in `creaProvider`
+e si cambia la variabile `AI_PROVIDER`. Nessun'altra riga di codice di gioco
+cambia — utile visto che i free tier vengono deprecati senza preavviso.
+
+## Documenti
+
+- [`docs/architettura.md`](docs/architettura.md) — decisioni di schema, contratto
+  con l'AI, scelte che si discostano dalla bozza iniziale e punti ancora aperti.

@@ -1,0 +1,23 @@
+name: avventua
+description: Un gioco di ruolo D&D-like in cui il Dungeon Master è un'AI.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'  # Flutter 3.27+ (Color.withValues)
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Gestione stato: providers espliciti, niente codegen da mantenere.
+  flutter_riverpod: ^2.5.1
+  http: ^1.2.2
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
