@@ -1,0 +1,22 @@
+# Node / Workers
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+*.log
+
+# Flutter / Dart
+app/.dart_tool/
+app/.packages
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/ios/Pods/
+app/android/.gradle/
+app/android/local.properties
+*.iml
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

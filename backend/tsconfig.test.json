@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "types": ["@cloudflare/workers-types", "node", "vitest/globals"],
+    "noUnusedLocals": false
+  },
+  "include": ["test/**/*.ts", "src/**/*.ts"]
+}

@@ -1,0 +1,26 @@
+name = "avventua-backend"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "avventua"
+# Sostituire con l'ID reale dopo `wrangler d1 create avventua`.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[vars]
+# Provider AI attivo: "gemini" | "mock"
+AI_PROVIDER = "gemini"
+GEMINI_MODEL = "gemini-2.0-flash"
+# Sessioni accumulate prima di consolidare il riassunto di campagna.
+CONSOLIDA_OGNI_N_SESSIONI = "5"
+# Caratteri totali di delta oltre i quali si consolida comunque.
+CONSOLIDA_SOGLIA_CARATTERI = "6000"
+# Eventi recenti inclusi nel prompt del DM.
+FINESTRA_EVENTI_RECENTI = "24"
+
+# Segreti (NON metterli qui):
+#   wrangler secret put GEMINI_API_KEY
+# In locale: file backend/.dev.vars con GEMINI_API_KEY="..."
