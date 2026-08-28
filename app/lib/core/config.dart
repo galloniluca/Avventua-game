@@ -10,8 +10,12 @@ class Config {
     defaultValue: 'http://10.0.2.2:8787', // localhost del Worker visto dall'emulatore Android
   );
 
-  /// Quanto aspettare una risposta del DM prima di arrendersi: la chiamata al
-  /// modello può essere lenta, molto più di una normale richiesta REST.
-  static const Duration timeoutTurno = Duration(seconds: 90);
+  /// Quanto aspettare una risposta del DM prima di arrendersi.
+  ///
+  /// Generoso di proposito: con Gemini un turno arriva in pochi secondi, ma un
+  /// modello locale via Ollama su CPU può metterci un paio di minuti a
+  /// scrivere una scena. È un tetto massimo, non un'attesa: non costa niente
+  /// quando il server è veloce.
+  static const Duration timeoutTurno = Duration(minutes: 3);
   static const Duration timeoutStandard = Duration(seconds: 20);
 }

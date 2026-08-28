@@ -69,7 +69,9 @@ npm run typecheck
 npm run deploy
 ```
 
-Per giocare **senza chiave API** basta `npm run dev:demo`: un Dungeon Master di
+Con un modello locale già installato: `npm run dev:ollama` (vedi
+[docs/AVVIO.md](docs/AVVIO.md), Tappa 3a). Per giocare **senza niente di niente**
+basta `npm run dev:demo`: un Dungeon Master di
 prova risponde con narrazione precotta ma fa girare per davvero dadi, punti
 ferita, XP e riassunti, così si può verificare tutta la macchina prima di
 procurarsi una chiave. Nei test si usa `AI_PROVIDER=mock`, deterministico.
@@ -144,6 +146,15 @@ Tutto il backend parla solo con `ProviderAi.chiamaAI`. Per cambiare fornitore
 si aggiunge un file in `backend/src/ai/`, si aggiunge un caso in `creaProvider`
 e si cambia la variabile `AI_PROVIDER`. Nessun'altra riga di codice di gioco
 cambia — utile visto che i free tier vengono deprecati senza preavviso.
+
+Al momento ci sono quattro provider:
+
+| `AI_PROVIDER` | Cosa fa |
+| --- | --- |
+| `gemini` | Gemini Flash via API. Serve `GEMINI_API_KEY`. |
+| `ollama` | Modello locale via Ollama. Nessuna chiave, niente esce dal computer. |
+| `demo` | Dungeon Master finto: narrazione precotta, meccaniche vere. Nessuna dipendenza. |
+| `mock` | Deterministico, per i test. |
 
 ## Documenti
 

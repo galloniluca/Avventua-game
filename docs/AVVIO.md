@@ -11,7 +11,7 @@ avere già l'app che gira davanti agli occhi.
 | --- | --- | --- | --- |
 | 1 | L'app nel browser del tuo PC, giocabile | nessuno | ~30 min (quasi tutti di installazione) |
 | 2 | L'app installata sul telefono | nessuno | ~15 min |
-| 3 | Il Dungeon Master vero (AI) | Google AI Studio (gratis) | ~5 min |
+| 3 | Il Dungeon Master vero (AI) | Google AI Studio (gratis) — **oppure nessuno, se hai Ollama** | ~5 min |
 | 4 | Funziona anche lontano dal PC | Cloudflare (gratis) | ~20 min |
 
 ---
@@ -92,6 +92,33 @@ Si apre Chrome con l'app. Da lì:
 
 Se qualcosa non va, salta alla sezione **Se qualcosa non funziona** in fondo.
 
+### Perché Chrome e non un'app sul desktop
+
+Flutter sa compilare anche in app nativa per Windows, macOS e Linux, quindi la
+domanda è legittima. Per questo progetto Chrome resta la scelta migliore per il
+primo giro, per tre motivi:
+
+1. **Non richiede altro.** Il desktop nativo su Windows vuole Visual Studio con
+   il carico "Sviluppo di applicazioni desktop con C++" (circa 7 GB), su macOS
+   vuole Xcode, su Linux le librerie GTK di sviluppo. È più installazione di
+   quanta ne serva per l'APK Android.
+2. **È lo stesso identico codice.** Non stai guardando un'approssimazione:
+   `lib/` è quello che finirà nell'APK.
+3. **Ti serve comunque.** La build web è quella che ti mette l'app sul telefono
+   in cinque minuti nella Tappa 2a, senza Android Studio.
+
+Una cosa da fare però sì: **guardala a misura di telefono.** L'interfaccia è
+disegnata per uno schermo stretto, e a tutta larghezza di monitor sembra sbagliata.
+In Chrome premi `F12`, poi l'icona del telefono in alto a sinistra nel pannello
+(o `Ctrl+Shift+M`), e scegli un dispositivo tipo *Pixel 7*.
+
+Mentre `flutter run` è attivo, il terminale accetta comandi utili:
+`r` ricarica le modifiche al volo, `R` riavvia l'app, `q` esce.
+
+Se più avanti vuoi la resa davvero fedele, l'**emulatore Android** di Android
+Studio è la strada giusta — ma tanto vale installarlo quando ti servirà per
+costruire l'APK (Tappa 2b), non adesso.
+
 ---
 
 ## Tappa 2 — L'app sul telefono
@@ -163,8 +190,66 @@ farla funzionare ovunque serve la Tappa 4.
 
 ## Tappa 3 — Il Dungeon Master vero
 
-Finora hai giocato con il DM di prova. Per avere l'AI serve una chiave Gemini,
-gratuita.
+Finora hai giocato con il DM di prova, che non usa AI. Ci sono due strade per
+avere un modello vero, e puoi cambiare idea quando vuoi: il motore AI sta dietro
+un'interfaccia unica, quindi si passa dall'uno all'altro con una variabile.
+
+| | Ollama (sul tuo PC) | Gemini (nel cloud) |
+| --- | --- | --- |
+| Account | nessuno | Google, gratuito |
+| Costo | zero | zero fino a 1.500 richieste/giorno |
+| Privacy | non esce niente dal PC | i prompt vanno a Google |
+| Velocità | 10-90 secondi a turno, dipende dal PC | 2-5 secondi |
+| Qualità in italiano | discreta con un modello da 7-8B | nettamente migliore |
+| Funziona da fuori casa | no | sì |
+
+Se hai già Ollama installato, **parti da lì**: è a costo zero e non richiede di
+creare niente. Quando vorrai giudicare come scrive davvero il Dungeon Master,
+passa a Gemini.
+
+### 3a. Con Ollama (già installato sul tuo PC)
+
+Scarica un modello, se non ne hai già uno adatto:
+
+```bash
+ollama pull qwen2.5:7b      # ~5 GB, buona resa in italiano e con il JSON
+```
+
+Alternative, se hai almeno 16 GB di RAM: `mistral-nemo` (12B, scrive meglio in
+italiano ma è più lento) oppure `llama3.1:8b`.
+
+Poi fai partire il backend puntandolo su Ollama:
+
+```bash
+cd backend
+npm run dev:ollama
+```
+
+Il modello e l'indirizzo si cambiano in `wrangler.toml` (`OLLAMA_MODEL`,
+`OLLAMA_URL`), oppure al volo:
+
+```bash
+npx wrangler dev --var AI_PROVIDER:ollama --var OLLAMA_MODEL:mistral-nemo
+```
+
+Due cose da sapere:
+
+- **Il primo turno è lento.** Ollama deve caricare i pesi in memoria. Dal secondo
+  in poi va molto più veloce, perché il modello resta caricato dieci minuti.
+- **`num_ctx` è impostato a 8192 apposta.** Il default di Ollama è spesso 2048
+  token, mentre il prompt del Dungeon Master (ambientazione + riassunto della
+  campagna + eventi recenti + scheda del personaggio) li supera facilmente. Con
+  un contesto troppo corto il modello perde l'inizio delle istruzioni e comincia
+  a proporti scelte multiple o a dimenticarsi chi è morto.
+
+Cosa aspettarsi onestamente: un modello da 7-8 miliardi di parametri regge bene
+le meccaniche (chiede i tiri giusti, rispetta il formato) ma scrive un italiano
+più piatto e ogni tanto perde il filo delle sottotrame lunghe. Va benissimo per
+sviluppare e per capire se il gioco ti diverte.
+
+### 3b. Con Gemini
+
+Serve una chiave, gratuita.
 
 1. Vai su https://aistudio.google.com/apikey e accedi con un account Google.
 2. **Create API key** → copia la chiave.
@@ -181,7 +266,7 @@ cd backend
 npm run dev
 ```
 
-Da adesso narra il modello vero.
+Da adesso narra Gemini.
 
 Il piano gratuito dà 1.500 richieste al giorno. Una sessione di gioco da venti
 turni con qualche tiro di dado ne consuma una trentina, quindi ci stai
@@ -248,6 +333,17 @@ delle migration. In locale non serve nessun account.
 **Il DM risponde con testo strano tipo "(DM di prova: ho ricevuto…)"** — stai
 girando con `npm run dev:demo`. È corretto: è il DM finto. Passa alla Tappa 3.
 
+**"Impossibile contattare Ollama"** — Ollama non è in esecuzione. Aprilo, oppure
+da terminale `ollama serve`. Verifica che risponda con
+`curl http://127.0.0.1:11434/api/tags`.
+
+**"Ollama non ha il modello X"** — scaricalo con `ollama pull X`. Con
+`ollama list` vedi quelli che hai già.
+
+**Con Ollama il DM propone scelte multiple o si dimentica le cose** — quasi
+sempre è il contesto troppo corto per il modello che stai usando. Alza
+`OLLAMA_NUM_CTX` in `wrangler.toml`, o passa a un modello più capace.
+
 **Voglio ripartire da zero con il database locale** — cancella la cartella
 `backend/.wrangler/` e rifai il comando delle migration.
 
@@ -257,7 +353,9 @@ girando con `npm run dev:demo`. È corretto: è il DM finto. Passa alla Tappa 3.
 
 ```bash
 # ogni volta che vuoi giocare in locale, due terminali:
-cd backend && npm run dev            # (o dev:demo senza chiave AI)
+cd backend && npm run dev            # Gemini    (serve la chiave)
+cd backend && npm run dev:ollama     # Ollama    (modello sul tuo PC)
+cd backend && npm run dev:demo       # DM finto  (niente AI, niente account)
 cd app && flutter run -d chrome --dart-define=AVVENTUA_API=http://localhost:8787
 
 # verificare che il backend sia sano

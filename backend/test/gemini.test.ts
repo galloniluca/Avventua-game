@@ -120,6 +120,24 @@ describe('GeminiProvider', () => {
   });
 });
 
+  it('non invoca fetch con l\'istanza come `this` (workerd la rifiuta)', async () => {
+    // Regressione: this.fetchImpl(...) passava il provider come `this` e in
+    // produzione falliva con "Illegal invocation". I mock di vitest sono
+    // tolleranti, quindi qui si controlla direttamente il `this` ricevuto.
+    let thisRicevuto: unknown = 'mai chiamata';
+    const fetchImpl = function (this: unknown) {
+      thisRicevuto = this;
+      return Promise.resolve(rispostaOk('ok'));
+    };
+    const p = new GeminiProvider({
+      apiKey: 'k',
+      modello: 'm',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    await p.chiamaAI({ sistema: 's', messaggi: [] });
+    expect(thisRicevuto).not.toBe(p);
+  });
+
 describe('MockProvider', () => {
   it('genera un JSON conforme allo schema del DM', async () => {
     const risposta = await new MockProvider().chiamaAI({

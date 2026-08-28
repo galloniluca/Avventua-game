@@ -55,7 +55,10 @@ export class GeminiProvider implements ProviderAi {
 
   constructor(private readonly opzioni: OpzioniGemini) {
     if (!opzioni.apiKey) throw new ErroreAi('GEMINI_API_KEY mancante');
-    this.fetchImpl = opzioni.fetchImpl ?? fetch;
+    // workerd rifiuta fetch invocata con un `this` diverso dal global: chiamare
+    // this.fetchImpl(...) le passerebbe l'istanza e fallirebbe con "Illegal
+    // invocation". Si lega una volta sola qui, alla costruzione.
+    this.fetchImpl = (opzioni.fetchImpl ?? fetch).bind(globalThis);
     this.tentativi = opzioni.tentativi ?? 3;
   }
 

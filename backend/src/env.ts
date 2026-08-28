@@ -3,6 +3,9 @@ export interface Env {
   AI_PROVIDER?: string;
   GEMINI_API_KEY: string;
   GEMINI_MODEL?: string;
+  OLLAMA_URL?: string;
+  OLLAMA_MODEL?: string;
+  OLLAMA_NUM_CTX?: string;
   CONSOLIDA_OGNI_N_SESSIONI?: string;
   CONSOLIDA_SOGLIA_CARATTERI?: string;
   FINESTRA_EVENTI_RECENTI?: string;
