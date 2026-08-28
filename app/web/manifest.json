@@ -1,0 +1,18 @@
+{
+  "name": "Avventua",
+  "short_name": "Avventua",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1A1614",
+  "theme_color": "#1A1614",
+  "description": "Un gioco di ruolo D&D-like con l'AI come Dungeon Master.",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/dado.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

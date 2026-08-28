@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate:local": "wrangler d1 migrations apply avventua --local",
-    "db:migrate:remote": "wrangler d1 migrations apply avventua --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply avventua --remote",
+    "dev:demo": "wrangler dev --var AI_PROVIDER:demo"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240909.0",

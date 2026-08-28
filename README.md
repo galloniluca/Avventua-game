@@ -5,8 +5,12 @@ sceglie fra opzioni preconfezionate: scrive liberamente cosa fa, e il DM narra
 le conseguenze restando coerente con le regole e con tutto ciò che è già
 successo.
 
+> **Non hai ancora installato niente?** Parti da
+> **[docs/AVVIO.md](docs/AVVIO.md)**: ti porta da zero all'app che gira, senza
+> bisogno di creare account da nessuna parte per il primo giro.
+
 ```
-app/       Applicazione Flutter (Android, poi iOS)
+app/       Applicazione Flutter (Android e web, poi iOS)
 backend/   Cloudflare Worker + D1: dati, regole, motore DM-AI
 docs/      Decisioni di progetto e punti aperti
 ```
@@ -65,8 +69,10 @@ npm run typecheck
 npm run deploy
 ```
 
-Per giocare senza chiave API (o nei test) basta `AI_PROVIDER=mock`: risponde un
-provider deterministico che rispetta lo stesso contratto.
+Per giocare **senza chiave API** basta `npm run dev:demo`: un Dungeon Master di
+prova risponde con narrazione precotta ma fa girare per davvero dadi, punti
+ferita, XP e riassunti, così si può verificare tutta la macchina prima di
+procurarsi una chiave. Nei test si usa `AI_PROVIDER=mock`, deterministico.
 
 ### API
 
@@ -97,14 +103,24 @@ da sostituire quando arriverà il login vero.
 ```bash
 cd app
 flutter pub get
-flutter run --dart-define=AVVENTUA_API=http://10.0.2.2:8787   # emulatore Android
+
+# nel browser (il modo più rapido per vederla)
+flutter run -d chrome --dart-define=AVVENTUA_API=http://localhost:8787
+
+# su emulatore Android: 10.0.2.2 è il localhost dell'host visto dall'emulatore
+flutter run --dart-define=AVVENTUA_API=http://10.0.2.2:8787
 ```
 
-`10.0.2.2` è il localhost della macchina host visto dall'emulatore. Su
-dispositivo fisico va messo l'IP della macchina o l'URL del Worker deployato.
+Su dispositivo fisico va messo l'IP della macchina o l'URL del Worker deployato.
+L'indirizzo viene congelato nel binario al momento della compilazione.
 
 Richiede Flutter 3.27 o successivo. Stato con Riverpod, parsing JSON scritto a
 mano (niente `build_runner` da mantenere).
+
+Nel repository c'è la cartella `web/` (l'app è anche una PWA installabile dalla
+schermata home). La cartella `android/` va generata una volta con
+`flutter create --platforms=android .` — vedi [docs/AVVIO.md](docs/AVVIO.md),
+Tappa 2b, per l'unica accortezza da avere.
 
 ## Memoria narrativa
 
@@ -131,5 +147,7 @@ cambia — utile visto che i free tier vengono deprecati senza preavviso.
 
 ## Documenti
 
+- [`docs/AVVIO.md`](docs/AVVIO.md) — guida passo passo da zero: installazione,
+  primo avvio in locale, app sul telefono, messa online.
 - [`docs/architettura.md`](docs/architettura.md) — decisioni di schema, contratto
   con l'AI, scelte che si discostano dalla bozza iniziale e punti ancora aperti.

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#1A1614"/>
+  <!-- d20 stilizzato: esagono con le facce superiori in evidenza -->
+  <g fill="none" stroke="#C9A227" stroke-width="16" stroke-linejoin="round">
+    <path d="M256 64 L432 166 L432 346 L256 448 L80 346 L80 166 Z"/>
+    <path d="M256 64 L256 176 M256 176 L432 166 M256 176 L80 166"/>
+    <path d="M256 176 L150 300 L256 448 L362 300 Z"/>
+    <path d="M150 300 L80 346 M362 300 L432 346"/>
+  </g>
+  <text x="256" y="330" font-family="Georgia, serif" font-size="96" font-weight="bold"
+        fill="#C9A227" text-anchor="middle">20</text>
+</svg>

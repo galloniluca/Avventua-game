@@ -1,4 +1,5 @@
 import type { Env } from '../env';
+import { DemoProvider } from './demo';
 import { GeminiProvider } from './gemini';
 import { MockProvider } from './mock';
 import type { ProviderAi } from './provider';
@@ -11,6 +12,9 @@ export function creaProvider(env: Env): ProviderAi {
   switch (scelta) {
     case 'mock':
       return new MockProvider();
+    case 'demo':
+      // Gioco completo senza chiave API: narrazione precotta, meccaniche vere.
+      return new DemoProvider();
     case 'gemini':
       return new GeminiProvider({
         apiKey: env.GEMINI_API_KEY,
