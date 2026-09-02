@@ -44,6 +44,26 @@ cd Avventua-game
 git checkout claude/dnd-ai-dm-app-bmz0ip
 ```
 
+### Nota per Windows
+
+Se hai **Git for Windows** installato, hai già **Git Bash**: tutti i comandi di
+questa guida vanno scritti lì (non nel Prompt dei comandi né in PowerShell — la
+sintassi è quella di bash).
+
+- **Node.js**: scarica l'installer `.msi` versione LTS da nodejs.org ed eseguilo
+  con le opzioni di default.
+- **Flutter**: scarica lo **zip** (non serve Android Studio per questa tappa),
+  estrailo in un percorso corto e senza spazi come `C:\src\flutter` — non dentro
+  `Program Files` e **non dentro OneDrive**, che sincronizza ogni singolo file e
+  rallenta tutto. Poi aggiungi `C:\src\flutter\bin` al PATH da
+  *Modifica le variabili d'ambiente relative all'account* → *Path* → *Nuovo*, e
+  **riapri Git Bash** perché legga il PATH aggiornato.
+- Clona il repository anch'esso **fuori da OneDrive**, es. `C:\dev\Avventua-game`
+  (`mkdir -p /c/dev && cd /c/dev` in Git Bash).
+- Se `flutter doctor` si lamenta di "Developer Mode", esegui
+  `start ms-settings:developers` e attivalo — per la sola prova nel browser di
+  solito non serve, ma può servire più avanti per l'APK.
+
 ---
 
 ## Tappa 1 — L'app nel browser, senza nessun account
